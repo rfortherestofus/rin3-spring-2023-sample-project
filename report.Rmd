@@ -1,0 +1,115 @@
+---
+title: "Life Expectancy in `r params$location` County"
+author: "David Keyes"
+date: "June 7, 2023"
+output: 
+  pagedreport::paged_windmill:
+    logo: "https://mk0rfortheresto0o08q.kinstacdn.com/wp-content/uploads/2020/08/rru-logo-blue.svg"
+    img_to_dark: FALSE
+    logo_to_white: TRUE
+knit: pagedown::chrome_print
+main-color: "#6cabdd"
+params:
+  location: "Baker"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE,
+                      fig.height = 9)
+```
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+theme_dk <- function(show_grid_lines = TRUE,
+                     show_axis_titles = TRUE,
+                     theme_font = "Inter") {
+  
+  theme_dk <- theme_minimal(base_family = theme_font) +
+    theme(panel.grid.minor = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title = element_text(size = 12,
+                                    color = "grey50"),
+          axis.title.x = element_text(margin = margin(t = 10)),
+          axis.title.y = element_text(margin = margin(r = 10)),
+          axis.text = element_text(size = 12,
+                                   color = "grey50"),
+          strip.text = element_text(size = 12),
+          plot.title.position = "plot",
+          plot.title = element_text(size = 20,
+                                    face = "bold",
+                                    margin = margin(b = 8)),
+          plot.subtitle = element_text(size = 14,
+                                       color = "grey50"),
+          legend.text = element_text(size = 12),
+          legend.position = "top")
+  
+  if (show_grid_lines == FALSE) {
+    
+    theme_dk <- theme_dk +
+      theme(panel.grid.major = element_blank())
+    
+  }
+  
+  if (show_axis_titles == FALSE) {
+    
+    theme_dk <- theme_dk +
+      theme(axis.title = element_blank(),
+            axis.title.x = element_blank(),
+            axis.title.y = element_blank())
+    
+  }
+  
+  theme_dk
+  
+}
+
+theme_set(theme_dk(show_axis_titles = FALSE))
+```
+
+# State-Level Life Expectancy
+
+This is a report on life expectancy in Oregon from 2020 to 2023.
+
+```{r}
+life_expectancy <- read_rds("data/life_expectancy.rds")
+```
+
+```{r}
+life_expectancy_chart <- function(geography_filter) {
+  
+  year_labels <- c("2020", "", "", "2023")
+  
+  life_expectancy %>% 
+    filter(geography == geography_filter) %>% 
+    mutate(gender = factor(gender, levels = c("Men", "Women", "Total"))) %>% 
+    ggplot(aes(x = year,
+               y = value,
+               group = geography)) +
+    geom_line() +
+    scale_x_continuous(labels = year_labels) +
+    facet_wrap(~gender,
+               ncol = 1) 
+  
+}
+```
+
+```{r}
+life_expectancy_chart("Oregon")
+```
+
+# Life Expectancy in `r params$location` County
+
+```{r}
+life_expectancy_chart(params$location)
+```
+
+
+
+
+
+
